@@ -22,6 +22,7 @@ module Zaoqilc.Code (
     unreadRawCode,
     rawCodeGetPos
     ) where
+import Control.Monad
 
 data Code a = Atom a String | Symbol a [String] | Integer a Integer | List a [Code a] deriving (Show, Read)
 type RawCode a = [(a, Char)]
@@ -43,6 +44,7 @@ readCode begin end l@(x:xs) = if begin x
                                                else Nothing
                               else Nothing
 readEnd (_, c) = c `elem` [' ', '(', ')', '{', '}']
+space = [' ', '\t', '\n']
 readCodeX begin end ok s = do
                              (a, b) <- readCode begin end s
                              return (ok a, b)
@@ -51,3 +53,9 @@ readAtom :: (Eq a) => RawCode a -> Maybe (Code a, RawCode a)
 readAtom = readCodeX (\(_,x)->x==':') readEnd (\c->Atom (rawCodeGetPos c) (tail $ unreadRawCode c))
 readSimpleSymbol :: (Eq a) => [(a, Char)] -> Maybe (Code a, RawCode a)
 readSimpleSymbol = readCodeX (not . readEnd) readEnd (\c->Symbol (rawCodeGetPos c) [unreadRawCode c])
+readSpace c = do
+                (a, b) <-pure$ break (\c->not$elem$space) c
+                guard $ not $ null a
+                return b
+--readingItem (x:xs) n = do
+--                         
