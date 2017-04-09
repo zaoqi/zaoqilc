@@ -24,24 +24,25 @@ data RawCode a = RawCode [(a, Char)]
 
 instance Show (RawCode a) where
     show (RawCode ((_,c):xs)) = c:show (RawCode xs)
-    show (RawCode []) = ""
+    show (RawCode []) = []
 
 instance (Integral a) => Read (RawCode a) where
-    readsPrec _ s = [(RawCode (zip [1..] s), "")]
+    readsPrec _ s = [(RawCode (zip [1..] s), [])]
 
-readCoding _ "" = ("", "")
-readCoding end l@(x:xs) = if end x then ("", l)
+readCoding _ [] = ([], [])
+readCoding end l@(x:xs) = if end x then ([], l)
                                    else let (a, b) = readCoding end xs
                                         in (x:a, b)
-readCode _ _ "" = Nothing
+readCode _ _ [] = Nothing
 readCode begin end (x:xs) = if begin x
                               then let o@(a, b) = readCoding end xs
-                                   in if a/="" then Just o
+                                   in if a/=[] then Just o
                                                else Nothing
                               else Nothing
-readEnd c = c `elem` [' ', '(', ')', '{', '}']
+readEnd (_, c) = c `elem` [' ', '(', ')', '{', '}']
 readCodeX begin end ok s = do
                              (a, b) <- readCode begin end s
                              return (ok a, b)
 
-readAtom = readCode (==':') readEnd
+readAtom :: (Eq a) => [(a, Char)] -> Maybe ([(a, Char)], [(a, Char)])
+readAtom = readCode (\(_,x)->x==':') readEnd
