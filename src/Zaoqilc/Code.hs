@@ -23,7 +23,7 @@ module Zaoqilc.Code (
     rawCodeGetPos
     ) where
 
-data Code a = Atom a String | Symbol a [String] | Integer a Integer | List a [Code a]
+data Code a = Atom a String | Symbol a [String] | Integer a Integer | List a [Code a] deriving (Show, Read)
 type RawCode a = [(a, Char)]
 
 showRawCode ((_,c):xs) = c:showRawCode xs
@@ -47,5 +47,5 @@ readCodeX begin end ok s = do
                              (a, b) <- readCode begin end s
                              return (ok a, b)
 
-readAtom :: (Eq a) => RawCode a -> Maybe (RawCode a, RawCode a)
-readAtom = readCode (\(_,x)->x==':') readEnd
+readAtom :: (Eq a) => RawCode a -> Maybe (Code a, RawCode a)
+readAtom = readCodeX (\(_,x)->x==':') readEnd (\c-> Atom (rawCodeGetPos c) (tail $ unreadRawCode c))
