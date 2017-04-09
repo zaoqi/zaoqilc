@@ -48,4 +48,6 @@ readCodeX begin end ok s = do
                              return (ok a, b)
 
 readAtom :: (Eq a) => RawCode a -> Maybe (Code a, RawCode a)
-readAtom = readCodeX (\(_,x)->x==':') readEnd (\c-> Atom (rawCodeGetPos c) (tail $ unreadRawCode c))
+readAtom = readCodeX (\(_,x)->x==':') readEnd (\c->Atom (rawCodeGetPos c) (tail $ unreadRawCode c))
+readSimpleSymbol :: (Eq a) => [(a, Char)] -> Maybe (Code a, RawCode a)
+readSimpleSymbol = readCodeX (not . readEnd) readEnd (\c->Symbol (rawCodeGetPos c) [unreadRawCode c])
