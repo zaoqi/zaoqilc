@@ -43,5 +43,5 @@ readCodeX begin end ok s = do
                              (a, b) <- readCode begin end s
                              return (ok a, b)
 
-readAtom :: (Eq a) => [(a, Char)] -> Maybe ([(a, Char)], [(a, Char)])
+readAtom :: (Eq a) => RawCode a -> Maybe (RawCode a, RawCode a)
 readAtom = readCode (\(_,x)->x==':') readEnd
