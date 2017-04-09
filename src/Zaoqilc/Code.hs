@@ -18,7 +18,9 @@ module Zaoqilc.Code (
     Code(Atom, Symbol, Integer, List),
     RawCode,
     showRawCode,
-    readRawCode
+    readRawCode,
+    unreadRawCode,
+    rawCodeGetPos
     ) where
 
 data Code a = Atom a String | Symbol a [String] | Integer a Integer | List a [Code a]
@@ -27,14 +29,16 @@ type RawCode a = [(a, Char)]
 showRawCode ((_,c):xs) = c:showRawCode xs
 showRawCode [] = []
 readRawCode = zip [1..]
+unreadRawCode = snd . unzip
+rawCodeGetPos = fst . head
 
 readCoding _ [] = ([], [])
 readCoding end l@(x:xs) = if end x then ([], l)
                                    else let (a, b) = readCoding end xs
                                         in (x:a, b)
 readCode _ _ [] = Nothing
-readCode begin end (x:xs) = if begin x
-                              then let o@(a, b) = readCoding end xs
+readCode begin end l@(x:xs) = if begin x
+                              then let o@(a, b) = readCoding end l
                                    in if a/=[] then Just o
                                                else Nothing
                               else Nothing
