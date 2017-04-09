@@ -13,8 +13,17 @@
 
 --You should have received a copy of the GNU Affero General Public License
 --along with this program.  If not, see <http://www.gnu.org/licenses/>.
-module Zaoqilc.Code where
+module Zaoqilc.Code (
+    Code(Atom, Symbol, Integer, List),
+    RawCode(RawCode)
+    ) where
 
 data Code a = Atom a String | Symbol a [String] | Integer a Integer | List a [Code a]
+data RawCode a = RawCode [(a, Char)]
 
+instance Show (RawCode a) where
+    show (RawCode ((_,c):xs)) = c:show (RawCode xs)
+    show (RawCode []) = ""
 
+instance (Integral a) => Read (RawCode a) where
+    readsPrec _ s = [(RawCode (zip [1..] s), "")]
