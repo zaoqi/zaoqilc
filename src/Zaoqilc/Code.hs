@@ -16,18 +16,17 @@
 {-# LANGUAGE MultiWayIf #-}
 module Zaoqilc.Code (
     Code(Atom, Symbol, Integer, List),
-    RawCode(RawCode)
+    RawCode,
+    showRawCode,
+    readRawCode
     ) where
 
 data Code a = Atom a String | Symbol a [String] | Integer a Integer | List a [Code a]
-data RawCode a = RawCode [(a, Char)]
+type RawCode a = [(a, Char)]
 
-instance Show (RawCode a) where
-    show (RawCode ((_,c):xs)) = c:show (RawCode xs)
-    show (RawCode []) = []
-
-instance (Integral a) => Read (RawCode a) where
-    readsPrec _ s = [(RawCode (zip [1..] s), [])]
+showRawCode ((_,c):xs) = c:showRawCode xs
+showRawCode [] = []
+readRawCode = zip [1..]
 
 readCoding _ [] = ([], [])
 readCoding end l@(x:xs) = if end x then ([], l)
