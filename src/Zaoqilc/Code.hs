@@ -54,15 +54,15 @@ readAtom = readCodeX (\(_,x)->x==':') readEnd (\c->Atom (rawCodeGetPos c) (tail 
 readSimpleSymbol :: (Eq a) => [(a, Char)] -> Maybe (Code a, RawCode a)
 readSimpleSymbol = readCodeX (not . readEnd) readEnd (\c->Symbol (rawCodeGetPos c) [unreadRawCode c])
 readSpace c = do
-                (a, b) <-pure$ break (\x->not$elem x space) c
+                (a, b) <-pure$ break (\(_,x)->not$elem x space) c
                 guard $ not $ null a
                 return b
-readingList :: [Char] -> Maybe [[Char]]
+readingList :: RawCode a -> Maybe [RawCode a]
 readingList [] = return []
 readingList c = case readSpace c of
                   Just x -> readingList x
                   Nothing -> do
-                               (a, b) <-pure$ break (\x->elem x space) c
+                               (a, b) <-pure$ break (\(_,x)->elem x space) c
                                guard $ not $ null a
                                o <- readingList b
                                return $ a:o
