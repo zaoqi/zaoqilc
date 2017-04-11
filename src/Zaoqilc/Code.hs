@@ -57,13 +57,14 @@ readSpace c = do
                 (a, b) <-pure$ break (\x->not$elem x space) c
                 guard $ not $ null a
                 return b
-readingList [] = []
+readingList :: [Char] -> Maybe [[Char]]
+readingList [] = return []
 readingList c = case readSpace c of
                   Just x -> readingList x
                   Nothing -> do
                                (a, b) <-pure$ break (\x->elem x space) c
                                guard $ not $ null a
                                o <- readingList b
-                               return $ b:o
+                               return $ a:o
 --readingItem (x:xs) n = do
 --                         
