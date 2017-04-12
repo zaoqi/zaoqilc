@@ -57,7 +57,9 @@ readSpace c = do
                 (a, b) <-pure$ break (\(_,x)->not$elem x space) c
                 guard $ not $ null a
                 return b
-readingList [] = []
+readingList _ [] = []
+readingList f (x:xs) = if f x then 
+                              else
 readingList c = case readSpace c of
                   Just x -> readingList x
                   Nothing -> let (a, b) = break (\(_,x)->elem x space) c in a:readingList b
