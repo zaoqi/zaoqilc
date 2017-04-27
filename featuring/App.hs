@@ -1,12 +1,16 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
-class App f p r where
-    app :: f -> p -> r
-instance App ([a] -> b) a ([a] -> b) where
+import Data.Dynamic
+import Data.Typeable
+class App t where
+    app :: t
+instance App (([a] -> b) -> a -> ([a] -> b)) where
     app f p = \a -> f (p:a)
-instance App (a -> b) a b where
-    app f p = f p
+instance App ((a -> b) -> (a -> b)) where
+    app = id
+instance (Typeable b) => App (([Dynamic] -> a) -> b -> ([Dynamic] -> a)) where
+    app f p = \a -> f (toDyn p:a)
 
 class Call f r where
     call :: f -> r
