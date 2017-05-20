@@ -16,5 +16,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE GADTs #-}
+module Data.Atom where
 data Atom :: [Char] -> * where
     Atom :: Atom a
