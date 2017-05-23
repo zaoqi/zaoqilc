@@ -35,3 +35,9 @@ nextRawCode = do
 	x : xs <- get
 	put xs
 	return x
+
+rawCodeNotSymbol :: MonadPlus b => StateT [RawCode a] b (Token a)
+rawCodeNotSymbol = do
+	c@(_, x) <- nextRawCode
+	guard $ x `elem` "(){}'`\n"
+	return [c]
