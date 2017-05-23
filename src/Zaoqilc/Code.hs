@@ -25,3 +25,5 @@ data Code a = CodeAtom [a] [String] |
 			  CodeNumber [a] (Ratio Integer) |
 			  CodeChar [a] Char |
 			  CodeList [a] [Code a]
+
+notSymbol (_, c) = c `elem` "(){}'`\t\r\n "
