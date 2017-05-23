@@ -17,6 +17,7 @@
 module Zaoqilc.Code where
 import Control.Monad
 import Data.Ratio
+import Control.Monad.Trans.State.Lazy
 
 type RawCode a = (a, Char)
 type Token a = [RawCode a]
@@ -28,3 +29,9 @@ data Code a = CodeAtom [a] [String] |
 
 notSymbol :: RawCode a -> Bool
 notSymbol (_, c) = c `elem` "(){}'`\t\r\n "
+
+nextRawCode :: Monad b => StateT [RawCode a] b (RawCode a)
+nextRawCode = do
+	x : xs <- get
+	put xs
+	return x
