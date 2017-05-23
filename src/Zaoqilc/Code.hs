@@ -26,4 +26,5 @@ data Code a = CodeAtom [a] [String] |
 			  CodeChar [a] Char |
 			  CodeList [a] [Code a]
 
+notSymbol :: RawCode a -> Bool
 notSymbol (_, c) = c `elem` "(){}'`\t\r\n "
