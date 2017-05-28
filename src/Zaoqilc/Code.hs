@@ -82,3 +82,24 @@ rawCodeString =
             return x
         xs <- doing <|> e
         return (x:xs)
+
+rawCodeSymbol :: MonadPlus b => StateT [RawCode a] b [RawCode a]
+rawCodeSymbol = do
+    c@(_, x) <- nextRawCode
+    guard $ x `notElem` "(){}'`[];\n\t\r\"“”^ "
+    (<|> return [c]) $ do
+        xs <- rawCodeSymbol
+        return (c:xs)
+
+rawCode2Token :: [RawCode a] -> [Token a]
+rawCode2Token xs =
+    let
+        Just (x, []) = flip runStateT (filter (\(_,x)->x/='\r') xs) $
+            let
+                self = do
+                    x <- rawCodeSpace <|> rawCodeString <|> rawCodeNotSymbol <|> rawCodeSymbol
+                    (<|> return [x]) $ do
+                        xs <- self
+                        return (x:xs)
+            in self
+    in x
