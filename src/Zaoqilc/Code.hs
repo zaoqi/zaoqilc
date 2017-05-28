@@ -13,31 +13,72 @@
 
 --You should have received a copy of the GNU Affero General Public License
 --along with this program.  If not, see <http://www.gnu.org/licenses/>.
-{-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 module Zaoqilc.Code where
 import Control.Monad
 import Data.Ratio
 import Control.Monad.Trans.State.Lazy
+import Control.Applicative
 
+type Locale = String
 type RawCode a = (a, Char)
 type Token a = [RawCode a]
 data Code a = CodeAtom [a] [String] |
               CodeSymbol [a] [String] |
-			  CodeNumber [a] (Ratio Integer) |
-			  CodeChar [a] Char |
-			  CodeList [a] [Code a]
+              CodeNumber [a] (Ratio Integer) |
+              CodeChar [a] Char |
+              CodeText [a] [(Locale, String)] | --给人类看的文本，普通字符串用字符的列表来表示
+              CodeList [a] [Code a]
 
 notSymbol :: RawCode a -> Bool
 notSymbol (_, c) = c `elem` "(){}'`\t\r\n "
 
 nextRawCode :: Monad b => StateT [RawCode a] b (RawCode a)
 nextRawCode = do
-	x : xs <- get
-	put xs
-	return x
+    x : xs <- get
+    put xs
+    return x
 
 rawCodeNotSymbol :: MonadPlus b => StateT [RawCode a] b (Token a)
 rawCodeNotSymbol = do
-	c@(_, x) <- nextRawCode
-	guard $ x `elem` "(){}'`\n"
-	return [c]
+    c@(_, x) <- nextRawCode
+    guard $ x `elem` "(){}'`[];\n"
+    return [c]
+
+rawCodeSpace :: MonadPlus b => StateT [RawCode a] b [RawCode a]
+rawCodeSpace = do
+    c@(_, x) <- nextRawCode
+    guard $ x `elem` "\t "
+    (<|> return [c]) $ do
+        xs <- rawCodeSpace
+        return (c:xs)
+
+rawCodeString :: MonadPlus b => StateT [RawCode a] b [RawCode a]
+rawCodeString =
+    do
+        q@(_, x) <- nextRawCode
+        guard $ x `elem` "\"“"
+        r <- doing
+        return (q:r)
+  where
+    t = do
+        (_, '^') <- nextRawCode
+        (a, x) <- nextRawCode
+        return . (,) a $ case x of ';' -> '\n'
+                                   '>' -> '\t'
+                                   '<' -> '\r'
+                                   '"' -> '"'
+                                   '“' -> '“'
+                                   '”' -> '”'
+                                   '^' -> '^'
+    e = do
+        q@(_, x) <- nextRawCode
+        guard $ x `elem` "\"”"
+        return [q]
+    doing = do
+        x <- (t <|>) $ do
+            x@(_, c) <- nextRawCode
+            guard $ c `notElem` "\"“”^"
+            return x
+        xs <- doing <|> e
+        return (x:xs)
