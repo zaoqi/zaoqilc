@@ -26,7 +26,8 @@ module Control.Concurrent.Signal (
     runSignal,
     foldp,
     sampleOn,
-    slift
+    slift,
+    sliftinit
     ) where
 
 import Control.Concurrent
@@ -142,3 +143,8 @@ slift (Signal s) = Signal $ \n -> s $ \f -> do
     x <- f
     n x
 slift (Stream s) = Stream $ fmap join s
+
+sliftinit :: IO a -> Signal a
+sliftinit f = Stream $ do
+    x <- f
+    return . return $ x
