@@ -25,7 +25,8 @@ module Control.Concurrent.Signal (
     newStreamSignal,
     runSignal,
     foldp,
-    sampleOn
+    sampleOn,
+    slift
     ) where
 
 import Control.Concurrent
@@ -135,3 +136,9 @@ sampleOn (Signal c) (Signal v) = Signal $ \n -> do
         i <- readIORef r
         case i of Just x -> n x
                   Nothing -> return ()
+
+slift :: Signal (IO a) -> Signal a
+slift (Signal s) = Signal $ \n -> s $ \f -> do
+    x <- f
+    n x
+slift (Stream s) = Stream $ fmap join s
