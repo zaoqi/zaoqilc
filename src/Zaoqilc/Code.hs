@@ -19,10 +19,12 @@ import Control.Monad
 import Data.Ratio
 import Control.Monad.Trans.State.Lazy
 import Control.Applicative
+import Numeric.Natural
 
 type Locale = String
 type RawCode a = (a, Char)
 type Token a = [RawCode a]
+type Line a = (Natural, [Token a])
 data Code a = CodeAtom [a] [String] |
               CodeSymbol [a] [String] |
               CodeNumber [a] (Ratio Integer) |
