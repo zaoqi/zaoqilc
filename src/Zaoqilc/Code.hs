@@ -113,6 +113,7 @@ rawCode2Token xs =
     ed x = x
 
 mklines :: [[Token a]] -> StateT [String] (Either (Error a)) [Line a]
+mklines [] = return []
 mklines (x:xs) =
     do
         s@(sx : ss) <- get
@@ -143,3 +144,14 @@ mklines (x:xs) =
                 y@(Right (LT, _)) -> y
                 e@(Left _) -> e
                 _ -> Left $ Error "缩进错误" a
+
+makeLines :: [Token a] -> Either (Error a) [Line a]
+makeLines x = case runStateT (ct x & mklines) [""] of
+    (Left e) -> Left e
+    (Right (x, _)) -> Right x
+  where
+    c [(_, ';')] = True
+    c _ = False
+    ct xs = let (y, ys) = break c xs in case ys of
+        [] -> [y]
+        (z : zs) -> (y ++ [z]) : ct zs
