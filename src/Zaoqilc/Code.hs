@@ -17,9 +17,12 @@
 module Zaoqilc.Code where
 import Control.Monad
 import Data.Ratio
+import Control.Monad.Trans
 import Control.Monad.Trans.State.Lazy
 import Control.Applicative
 import Numeric.Natural
+import Data.Function
+import Zaoqilc.Common
 
 type Locale = String
 type RawCode a = (a, Char)
@@ -105,3 +108,35 @@ rawCode2Token xs =
                         return (x:xs)
             in self
     in x
+
+mklines :: [[Token a]] -> StateT [String] (Either (Error a)) [Line a]
+mklines (x:xs) =
+    do
+        s@(sx : ss) <- get
+        let (xb, xe) = cs x
+        cpr <- lift $ cp xb sx ss (x & concat & unzip & fst)
+        let s' = case cpr of {
+            (GT, _) -> (xb : s) ;
+            (LT, s'') -> s'' ;
+            (EQ, _) -> s ;
+        }
+        put s'
+        r <- mklines xs
+        return $ (toEnum (length s'), x) : r
+  where
+    cs :: [Token a] -> (String, [Token a])
+    cs a@(x : t) = let y@(h:_) = snd $ unzip x in
+        if h `elem` "\t " then (y, t)
+                          else ("", a)
+    cp :: String -> String -> [String] -> [a] -> Either (Error a) (Ordering, [String])
+    cp x s ss a
+        | x == s = Right (EQ, undefined)
+        | length x > length s = Right (GT, undefined)
+        | length x == length s = Left $ Error "缩进错误" a
+        | ss == [] = Left $ Error "缩进错误" a
+        | otherwise = -- length x < length s
+            let s : sx = ss in case cp x s sx a of
+                Right (EQ, _) -> Right (LT, ss)
+                y@(Right (LT, _)) -> y
+                e@(Left _) -> e
+                _ -> Left $ Error "缩进错误" a
