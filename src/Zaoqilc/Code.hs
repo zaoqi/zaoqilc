@@ -107,7 +107,10 @@ rawCode2Token xs =
                         xs <- self
                         return (x:xs)
             in self
-    in x
+    in map ed x
+  where
+    ed [(a, '\n')] = [(a, ';')]
+    ed x = x
 
 mklines :: [[Token a]] -> StateT [String] (Either (Error a)) [Line a]
 mklines (x:xs) =
