@@ -19,4 +19,4 @@ import Language.Haskell.TH.Quote
 
 hereDoc = QuasiQuoter { quoteExp = stringE }
 
-data Error a = Error String [a]
+data Error a = Error String [a] deriving (Show)
