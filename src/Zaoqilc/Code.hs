@@ -152,6 +152,7 @@ makeLines x = case runStateT (ct x & mklines) [""] of
   where
     c [(_, ';')] = True
     c _ = False
+    ct [] = []
     ct xs = let (y, ys) = break c xs in case ys of
         [] -> [y]
         (z : zs) -> (y ++ [z]) : ct zs
