@@ -24,7 +24,7 @@ module Control.Concurrent.Signal (
     newSignal,
     newStreamSignal,
     runSignal,
-    foldp,
+    scanp,
     sampleOn,
     slift,
     sliftinit
@@ -103,15 +103,15 @@ instance Applicative Signal where
     pure = Stream . return . return
     x <*> y = fmap (\(f, x) -> f x) $ splus x y
 
-foldp :: (b -> a -> b) -> b -> Signal a -> Signal b
-foldp f x (Signal s) = Signal $ \n -> do
+scanp :: (b -> a -> b) -> b -> Signal a -> Signal b
+scanp f x (Signal s) = Signal $ \n -> do
     r <- newIORef x
     s $ \i -> do
         p <- readIORef r
         let ns = f p i
         writeIORef r ns
         n ns
-foldp f x (Stream s) = Stream $ do
+scanp f x (Stream s) = Stream $ do
     fi <- s
     r <- newMVar x
     return $ do
