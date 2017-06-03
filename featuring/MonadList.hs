@@ -13,9 +13,20 @@
 
 --You should have received a copy of the GNU Affero General Public License
 --along with this program.  If not, see <http://www.gnu.org/licenses/>.
-模块 [Prelude 预定义] 任何
-来自Haskell Bool
-数据 [Bool 真假] = [True 真] [False 假]
-据缩进 若
-定义函数 [if 若] ((真) 甲 _) 甲
-				((假) _ 甲) 甲
+module Zaoqil.Monad.List where
+
+instance Monad [] where
+    xs >>= f = j 1 $ map f xs
+      where
+        p _ [] = ([], [])
+        p 0 xs = ([], xs)
+        p x ((y:ys):zs) = let (a, b) = p (pred x) zs in (y:a, ys:b)
+        j _ [] = []
+        j x xs = let (a, b) = p x xs in a ++ j (succ x) b
+
+instance Applicative [] where
+    pure x = [x]
+    fs <*> xs = do
+        f <- fs
+        x <- xs
+        return $ f x
