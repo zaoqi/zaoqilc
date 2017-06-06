@@ -15,3 +15,8 @@
 --along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- (let self = (\…… -> ……) in self)
+
+withself :: (a -> a) -> a
+withself x = let r = x r in r
+let' :: a -> (a -> b) -> b
+let' x in' = in' x
