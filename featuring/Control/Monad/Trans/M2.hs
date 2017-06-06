@@ -1,7 +1,9 @@
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 module Control.Monad.Trans.M2 where
 import Data.Function
+import Control.Applicative
 import Control.Monad
-import Control.Monad.Trans
+import Control.Monad.Trans.Class
 import Data.Foldable
 
 newtype M2 f g a = M2 (f (g a)) deriving (Show)
@@ -27,3 +29,9 @@ instance (Traversable f,Traversable g) => Traversable (M2 f g) where
 
 instance (Foldable f,Foldable g) => Foldable (M2 f g) where
     foldr f x (M2 xs) = xs & toList & map toList & join & foldr f x
+
+instance (Applicative (M2 f g), Alternative f) => Alternative (M2 f g) where
+    empty = M2 empty
+    M2 x <|> M2 y = M2 $ x <|> y
+
+instance (Alternative (M2 f g), Monad (M2 f g)) => MonadPlus (M2 f g)
